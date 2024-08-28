@@ -61,3 +61,4 @@ pipeline {
         }
     }
 }
+echo "# Adding a comment to test the pipeline" >> JenkinfileGIT
