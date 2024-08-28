@@ -69,10 +69,7 @@ pipeline {
         failure {
             mail to: 'phamthienphu2604@gmail.com',
                  subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has failed. Please check the Jenkins console for details.",
-                 attachLog: true
+                 body: "The pipeline has failed. Please check the Jenkins console for details."
         }
     }
 }
-// This is a test commit to trigger the Jenkins pipelinee
-
