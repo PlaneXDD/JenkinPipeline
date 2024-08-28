@@ -1,75 +1,43 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Build') {
-            steps {
-                script {
-                    // Build steps (e.g., Maven build)
-                    sh 'mvn clean install'
-                }
-            }
-        }
-        stage('Unit Tests') {
-            steps {
-                script {
-                    // Run unit tests
-                    sh 'mvn test'
-                }
-            }
-        }
-        stage('Code Analysis') {
-            steps {
-                script {
-                    // Code analysis with SonarQube
-                    sh 'mvn sonar:sonar'
-                }
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                script {
-                    // Security scanning (e.g., OWASP ZAP)
-                    sh 'zap-cli quick-scan'
-                }
-            }
-        }
-        stage('Deploy to Staging') {
-            steps {
-                script {
-                    // Deploy to staging environment
-                    sh 'scp -i key.pem target/*.jar ec2-user@staging-server:/home/ec2-user'
-                }
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                script {
-                    // Run integration tests on the staging environment
-                    sh 'mvn verify -Pstaging'
-                }
-            }
-        }
-        stage('Deploy to Production') {
-            steps {
-                script {
-                    // Deploy to production (e.g., AWS EC2)
-                    sh 'scp -i key.pem target/*.jar ec2-user@production-server:/home/ec2-user'
-                }
-            }
-        }
+    environment {
+        EMAIL_CREDS = credentials('gmail-creds')  // Replace 'gmail-creds' with the ID of your stored credentials
     }
 
-    post {
-        success {
-            mail to: 'phamthienphu2604@gmail.com',
-                 subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has completed successfully."
+    stages {
+        stage("Build") {
+            steps {
+                echo "Building ..."
+            }
+            post {
+                always {
+                    mail to: "phamthienphu2604@gmail.com",
+                        subject: "Build Status Email",
+                        body: "Build log attached!",
+                        mimeType: 'text/plain',
+                        smtpHost: 'smtp.gmail.com',
+                        smtpPort: '587',
+                        useTls: true,
+                        replyTo: 'phamthienphu2604@gmail.com',
+                        authentication: "${env.EMAIL_CREDS_USR}:${env.EMAIL_CREDS_PSW}"
+                }
+            }
         }
-        failure {
-            mail to: 'phamthienphu2604@gmail.com',
-                 subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has failed. Please check the Jenkins console for details."
+        stage("Test") {
+            steps {
+                echo "Testing ..."
+            }
+        }
+        stage("Deploy") {
+            steps {
+                echo "Deploying ..."
+            }
+        }
+        stage("Complete") {
+            steps {
+                echo "Completed."
+            }
         }
     }
 }
