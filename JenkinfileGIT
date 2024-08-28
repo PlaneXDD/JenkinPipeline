@@ -2,42 +2,35 @@ pipeline {
     agent any
 
     environment {
-        EMAIL_CREDS = credentials('gmail-creds')  // Replace 'gmail-creds' with the ID of your stored credentials
+        // Securely fetch the Gmail credentials stored in Jenkins
+        EMAIL_CREDS = credentials('gmail-creds')
     }
 
     stages {
-        stage("Build") {
+        stage('Build') {
             steps {
-                echo "Building ..."
-            }
-            post {
-                always {
-                    mail to: "phamthienphu2604@gmail.com",
-                        subject: "Build Status Email",
-                        body: "Build log attached!",
-                        mimeType: 'text/plain',
-                        smtpHost: 'smtp.gmail.com',
-                        smtpPort: '587',
-                        useTls: true,
-                        replyTo: 'phamthienphu2604@gmail.com',
-                        authentication: "${env.EMAIL_CREDS_USR}:${env.EMAIL_CREDS_PSW}"
-                }
+                bat 'mvn clean install'
             }
         }
-        stage("Test") {
-            steps {
-                echo "Testing ..."
-            }
+        // Other stages (Unit Tests, Code Analysis, etc.) can be added here
+    }
+
+    post {
+        success {
+            // Send success notification email
+            mail to: 'phamthienphu2604@gmail.com',
+                 subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
+                 body: "The pipeline has completed successfully.",
+                 from: "${env.EMAIL_CREDS_USR}",
+                 replyTo: 'phamthienphu2604@gmail.com'
         }
-        stage("Deploy") {
-            steps {
-                echo "Deploying ..."
-            }
-        }
-        stage("Complete") {
-            steps {
-                echo "Completed."
-            }
+        failure {
+            // Send failure notification email
+            mail to: 'phamthienphu2604@gmail.com',
+                 subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
+                 body: "The pipeline has failed. Please check the Jenkins console for details.",
+                 from: "${env.EMAIL_CREDS_USR}",
+                 replyTo: 'phamthienphu2604@gmail.com'
         }
     }
 }
