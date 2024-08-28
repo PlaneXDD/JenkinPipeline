@@ -7,12 +7,39 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Prepare Environment') {
             steps {
-                bat 'mvn clean install'
+                echo 'Preparing the environment...'
+                // Add any preparation commands here, like setting up directories or environment variables
             }
         }
-        // Other stages (Unit Tests, Code Analysis, etc.) can be added here
+
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                // A simple echo command to simulate the build process
+                bat 'echo Build successful' // For Windows
+                // sh 'echo Build successful' // For Linux/MacOS
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                // Replace with actual test commands, e.g., running a script
+                bat 'echo Tests passed' // For Windows
+                // sh 'echo Tests passed' // For Linux/MacOS
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                // Include packaging commands, such as creating a zip or tar file
+                bat 'echo Packaging done' // For Windows
+                // sh 'echo Packaging done' // For Linux/MacOS
+            }
+        }
     }
 
     post {
