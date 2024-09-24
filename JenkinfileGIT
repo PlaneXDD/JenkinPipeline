@@ -39,16 +39,19 @@ pipeline {
             archiveArtifacts artifacts: '*.log', allowEmptyArchive: true
             emailext(
                 to: 'phamthienphu2604@gmail.com',
-                subject: "Jenkins Build Status: ${currentBuild.currentResult}",
-                body: """
-                <p>The Jenkins build <b>${env.BUILD_NUMBER}</b> has completed with status: <b>${currentBuild.currentResult}</b>.</p>
-                <p>Attached are the build logs for your reference.</p>
-                """,
-                mimeType: 'text/html',
-                attachmentsPattern: '*.log',  // Attach the build, test, and package logs
-                attachLog: true,
-                from: "${env.EMAIL_CREDS_USR}",
-                replyTo: "${env.EMAIL_CREDS_USR}"
+    subject: "Jenkins Build Status: ${currentBuild.currentResult}",
+    body: """
+    <p>The Jenkins build <b>${env.BUILD_NUMBER}</b> has completed with status: <b>${currentBuild.currentResult}</b>.</p>
+    <p>Attached are the build logs for your reference.</p>
+    """,
+    mimeType: 'text/html',
+    attachmentsPattern: '*.log',  // Attach the build, test, and package logs
+    attachLog: true,
+    from: "${env.EMAIL_CREDS_USR}",
+    replyTo: "${env.EMAIL_CREDS_USR}",
+    smtpHost: 'smtp.gmail.com',
+    smtpPort: '465',
+    useSsl: true
             )
         }
     }
