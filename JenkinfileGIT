@@ -1,66 +1,54 @@
 pipeline {
     agent any
-
     environment {
-        EMAIL_CREDS = credentials('gmail-creds')  // Ensure this matches your Jenkins credential ID
+        // Define the credentials to use for email notifications
+        EMAIL_CREDS = credentials('gmail-creds')
     }
-
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Prepare Environment') {
             steps {
                 echo 'Preparing the environment...'
             }
         }
-
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                bat 'echo Build successful > build.log' // Generate a log file
+                bat 'echo Build successful > build.log'
             }
         }
-
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                bat 'echo Tests passed > test.log' // Generate a test log
+                bat 'echo Tests passed > test.log'
             }
         }
-
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
-                bat 'echo Packaging done > package.log' // Generate a package log
+                bat 'echo Packaging done > package.log'
             }
         }
     }
-
     post {
         always {
-            // Archive all logs created in the build stages
-            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
-        }
-
-        success {
-            // Send success notification email with logs attached
-            emailext (
+            archiveArtifacts artifacts: '*.log', allowEmptyArchive: true
+            emailext(
                 to: 'phamthienphu2604@gmail.com',
-                subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
-                body: "The pipeline has completed successfully. Please find the logs attached.",
-                attachmentsPattern: '**/*.log',
-                mimeType: 'text/plain',
-                from: "${env.EMAIL_CREDS_USR}"
-            )
-        }
-
-        failure {
-            // Send failure notification email with logs attached
-            emailext (
-                to: 'phamthienphu2604@gmail.com',
-                subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                body: "The pipeline has failed. Please find the logs attached.",
-                attachmentsPattern: '**/*.log',
-                mimeType: 'text/plain',
-                from: "${env.EMAIL_CREDS_USR}"
+                subject: "Jenkins Build Status: ${currentBuild.currentResult}",
+                body: """
+                <p>The Jenkins build <b>${env.BUILD_NUMBER}</b> has completed with status: <b>${currentBuild.currentResult}</b>.</p>
+                <p>Attached are the build logs for your reference.</p>
+                """,
+                mimeType: 'text/html',
+                attachmentsPattern: '*.log',  // Attach the build, test, and package logs
+                attachLog: true,
+                from: "${env.EMAIL_CREDS_USR}",
+                replyTo: "${env.EMAIL_CREDS_USR}"
             )
         }
     }
