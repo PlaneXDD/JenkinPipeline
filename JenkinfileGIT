@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        EMAIL_CREDS = credentials('gmail-creds')
+        EMAIL_CREDS = credentials('gmail-creds')  // Make sure this matches your Jenkins credential ID
     }
 
     stages {
@@ -15,24 +15,21 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                bat 'echo Build successful' // For Windows
-                // sh 'echo Build successful' // For Linux/MacOS
+                bat 'echo Build successful' // For Windows, or sh for Linux/MacOS
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                bat 'echo Tests passed' // For Windows
-                // sh 'echo Tests passed' // For Linux/MacOS
+                bat 'echo Tests passed' // For Windows, or sh for Linux/MacOS
             }
         }
 
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
-                bat 'echo Packaging done' // For Windows
-                // sh 'echo Packaging done' // For Linux/MacOS
+                bat 'echo Packaging done' // For Windows, or sh for Linux/MacOS
             }
         }
     }
@@ -49,23 +46,25 @@ pipeline {
 
         success {
             // Send success notification email with logs attached
-            mail to: 'phamthienphu2604@gmail.com',
-                 subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has completed successfully. Please find the logs attached.",
-                 attachLog: true,
-                 attachmentsPattern: 'console.log',
-                 from: "${env.EMAIL_CREDS_USR}",
-                 replyTo: 'phamthienphu2604@gmail.com'
+            emailext (
+                to: 'phamthienphu2604@gmail.com',
+                subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
+                body: "The pipeline has completed successfully. Please find the logs attached.",
+                attachmentsPattern: 'console.log',
+                mimeType: 'text/plain',
+                from: "${env.EMAIL_CREDS_USR}"
+            )
         }
         failure {
             // Send failure notification email with logs attached
-            mail to: 'phamthienphu2604@gmail.com',
-                 subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has failed. Please find the logs attached for details.",
-                 attachLog: true,
-                 attachmentsPattern: 'console.log',
-                 from: "${env.EMAIL_CREDS_USR}",
-                 replyTo: 'phamthienphu2604@gmail.com'
+            emailext (
+                to: 'phamthienphu2604@gmail.com',
+                subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
+                body: "The pipeline has failed. Please find the logs attached.",
+                attachmentsPattern: 'console.log',
+                mimeType: 'text/plain',
+                from: "${env.EMAIL_CREDS_USR}"
+            )
         }
     }
 }
