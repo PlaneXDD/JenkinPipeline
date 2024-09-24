@@ -1,9 +1,7 @@
-// This is a test comment to trigger the Jenkins pipeline
 pipeline {
     agent any
 
     environment {
-        // Securely fetch the Gmail credentials stored in Jenkins
         EMAIL_CREDS = credentials('gmail-creds')
     }
 
@@ -11,14 +9,12 @@ pipeline {
         stage('Prepare Environment') {
             steps {
                 echo 'Preparing the environment...'
-                // Add any preparation commands here, like setting up directories or environment variables
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // A simple echo command to simulate the build process
                 bat 'echo Build successful' // For Windows
                 // sh 'echo Build successful' // For Linux/MacOS
             }
@@ -27,7 +23,6 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Replace with actual test commands, e.g., running a script
                 bat 'echo Tests passed' // For Windows
                 // sh 'echo Tests passed' // For Linux/MacOS
             }
@@ -36,7 +31,6 @@ pipeline {
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
-                // Include packaging commands, such as creating a zip or tar file
                 bat 'echo Packaging done' // For Windows
                 // sh 'echo Packaging done' // For Linux/MacOS
             }
@@ -44,19 +38,32 @@ pipeline {
     }
 
     post {
+        always {
+            // Archive the console log as an artifact
+            archiveArtifacts artifacts: 'console.log', allowEmptyArchive: true
+            // Save the build log to a file
+            script {
+                writeFile file: 'console.log', text: currentBuild.rawBuild.getLog()
+            }
+        }
+
         success {
-            // Send success notification email
+            // Send success notification email with logs attached
             mail to: 'phamthienphu2604@gmail.com',
                  subject: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has completed successfully.",
+                 body: "The pipeline has completed successfully. Please find the logs attached.",
+                 attachLog: true,
+                 attachmentsPattern: 'console.log',
                  from: "${env.EMAIL_CREDS_USR}",
                  replyTo: 'phamthienphu2604@gmail.com'
         }
         failure {
-            // Send failure notification email
+            // Send failure notification email with logs attached
             mail to: 'phamthienphu2604@gmail.com',
                  subject: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has failed. Please check the Jenkins console for details.",
+                 body: "The pipeline has failed. Please find the logs attached for details.",
+                 attachLog: true,
+                 attachmentsPattern: 'console.log',
                  from: "${env.EMAIL_CREDS_USR}",
                  replyTo: 'phamthienphu2604@gmail.com'
         }
